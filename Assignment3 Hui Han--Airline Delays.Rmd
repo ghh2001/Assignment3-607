@@ -1,0 +1,77 @@
+---
+title: "Assignment3-Airline Delay"
+author: "Hui (Gracie) Han"
+---
+
+## Objective
+(1) Create a .CSV file (or optionally, a MySQL database!) that includes all of the information above. You're encouraged to use a "wide" structure similar to how the information appears above, so that you can practice tidying and transformations as described below.
+(2) Read the information from your .CSV file into R, and use tidyr and dplyr as needed to tidy and transform your data.
+
+# load needed package
+```{r, warning=FALSE, message=FALSE}
+library ('tidyr')
+library ('dplyr')
+library ('knitr')
+```
+
+###Get the data from the CSV File, the CSV file format is exactly the same as the source
+
+```{r}
+airlines <- read.csv ("E:/airlineData.csv")
+kable(airlines)
+
+kable(airlines)
+```
+
+## Data Cleaning to make it into a condition ready for analysis
+
+```{r, comment=NA}
+# rename cols
+names(airlines)[c(1,2)] <- c("Airline", "Status")
+airlines
+
+# remove middle NA obs, in row3, and row6
+airlines <- airlines [c(-3,-6),]
+airlines
+
+# add in missing airline values
+airlines[2,1] <- "ALASKA"
+airlines[4,1] <- "AMWEST"
+kable (airlines)
+
+# the original data is in wide format, make it a long format for cities
+tidyairline1 <- airlines %>% 
+   gather(cities, count, 3:7)
+tidyairline1
+
+#  then, for the status (on time vs delay, we transform it a wide format)
+tidyairline2 <- tidyairline1 %>% 
+     spread(Status, count)
+ tidyairline2
+
+
+#rename the 4th column name to get rid of the space in col name
+names(tidyairline2)[4] <- "ontime"
+
+kable(tidyairline2)
+
+```
+(3) Perform analysis to compare the arrival delays for the two airlines.
+```{r}
+#Delay ratios by airline and city, looked at each element seperately
+
+tidyairline3 <- tidyairline2 %>%
+   mutate(total=ontime + delayed, delayratio=round(delayed/total, 2)) 
+tidyairline3
+
+
+#Plot these delay ratios, based on City
+dotchart(tidyairline3$delayratio, groups = tidyairline3$Airline, labels = tidyairline3$cities )
+```
+```{r}
+
+```
+
+## Observation from the analysis: 
+It looks like ALASKA airlines had a lower individual delay ratio than AMWEST in every single city. 
+
